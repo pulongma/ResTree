@@ -1,0 +1,91 @@
+#' Residual Tree Gaussian Process Models for High-Dimensional Spatial Data
+#'
+#' The package is \code{ResTree} (\code{library(ResTree)}, \code{citation("ResTree")});
+#' its functions and source files keep the lowercase prefix \code{restree_*}.
+#'
+#' @description
+#' Fits residual-tree Gaussian process (ResTGP) models: the covariance of a
+#' Gaussian process on the unit cube is built from a random binary tree
+#' whose internal nodes carry space-filling knots (nested
+#' predictive-process layers) and whose terminal nodes close each branch
+#' with a leaf model -- the dense residual covariance (\code{Full}), the
+#' predictive-process leaf (\code{PP}), or a conjugate white-noise leaf
+#' (\code{WN}). Full uses a single size-constrained fixed tree, splitting
+#' while a node holds more than \code{r} remaining observations and extending
+#' the requested depth as needed. PP/WN tree uncertainty is integrated by
+#' sequential Monte Carlo. Deterministic cut rules share candidate calculations among particles
+#' that traverse the same node paths; random cut rules require more
+#' particle-specific work. Runtime and memory depend on sample size, dimension,
+#' depth, knot count, particle count, cut rule and hardware.
+#'
+#' @details
+#' The interface is built around two small validated objects and four verbs:
+#' \describe{
+#'   \item{\code{\link{restree_model}}}{the model specification: data and
+#'     every theta-independent tree setting (depth, knots, leaf model, knot
+#'     design, cut rule, tree prior), validated once.}
+#'   \item{\code{\link{restree_theta}}}{the covariance parameters of the
+#'     base Gaussian process, validated once and cheap to build.}
+#'   \item{\code{\link{restree_loglik}}}{\eqn{\log p(y \mid \theta)} for a
+#'     model at known \eqn{\theta}, as a single number computed entirely in
+#'     compiled code: the fixed-tree likelihood for \code{Full}, the
+#'     tree-averaged SMC evidence \eqn{\log Z(\theta)} for \code{PP}/\code{WN},
+#'     or the likelihood of a supplied fixed tree.}
+#'   \item{\code{\link{restree_fit}}}{estimation, with optional one-pass
+#'     prediction (\code{xnew}).  \code{Full} is fitted by maximum
+#'     likelihood (\eqn{\sigma^2} profiled analytically); \code{PP}/\code{WN}
+#'     estimate the global covariance parameters AND the tree by empirical
+#'     Bayes over the tree-integrated evidence (\code{method = "ebayes"}) or
+#'     by particle-marginal Metropolis--Hastings (\code{method = "pmmh"}).}
+#'   \item{\code{\link{restree_predict}}}{the one prediction entry point:
+#'     predictive mean, variance, per-tree moments, and -- when held-out
+#'     responses \code{ynew} accompany \code{xnew} and \code{joint_lpd = TRUE}
+#'     -- the joint log predictive density. \code{predict} dispatches to it.}
+#'   \item{\code{\link{restree_score}}}{scoring of a represented prediction
+#'     against held-out data in one row: RMSE and MAE, analytic Gaussian
+#'     CRPS or numerical Student-t-mixture CRPS, log pointwise predictive density and logarithmic
+#'     score, the joint log predictive density, and coverage/calibration.}
+#' }
+#'
+#' Fits are objects of class \code{\link[=restree-class]{restree}}, which
+#' inherit the model's slots, so \code{summary} (sampler and optimizer
+#' diagnostics, also \code{\link{restree_diagnostics}}), \code{plot} (the
+#' maximum a posteriori partition), \code{show}, and \code{predict} apply
+#' uniformly. Display uses \code{methods::show}; ordinary \code{print(x)}
+#' delegates to it when methods is attached, without a ResTree print wrapper.
+#' \code{restree_diagnostics(..., type = "trace")} collects sampler
+#' histories; \code{plot(fit, type = "trace")} plots them. Prediction also
+#' returns \code{restree}, with a plain prediction list and a distinct
+#' \code{kind}. \code{restree(model, theta)} assembles an unfitted object
+#' without running inference. A fitted object saved to
+#' disk retains the tree structures needed for prediction. After reloading,
+#' the native state is rebuilt by integer routing without refitting; rebuild
+#' cost grows with the observations, tree depth and number of stored trees.
+#' Numerical factors are recomputed for prediction. Only intact fitted
+#' objects should be reused; see the fitted-state and joint-density
+#' limitations in \code{\link{restree_predict}} and numerical limitations in
+#' \code{\link{restree_theta}} and \code{\link{restree_score}}.
+#'
+#' @examples
+#' \donttest{
+#' set.seed(10)
+#' n <- 400; X <- matrix(runif(2 * n), n, 2)
+#' y <- sin(4 * pi * X[, 1]) * cos(2 * pi * X[, 2]) + rnorm(n, sd = 0.3)
+#' th <- restree_theta(sig2 = 1, range = 0.2, nu = 2.5, nugget = 0.1)
+#' m <- restree_model(X, y, depth = 4, r = 15, leaf_model = "PP")
+#'
+#' ## likelihood at known theta (tree inferred and averaged out), then the
+#' ## workflow: fit, predict, score, summarize
+#' restree_loglik(m, th, nparticles = 50, seed = 10)
+#' fit <- restree_fit(m, theta = th, nparticles = 50, seed = 10,
+#'                    control = list(maxit = 10))
+#' Xt <- matrix(runif(200), 100, 2)
+#' yt <- sin(4 * pi * Xt[, 1]) * cos(2 * pi * Xt[, 2]) + rnorm(100, sd = 0.3)
+#' pred <- restree_predict(fit, xnew = Xt, ynew = yt)
+#' restree_score(pred, yt, label = "PP-eBayes")
+#' summary(fit)
+#' }
+#' @importFrom methods setClass setMethod representation prototype signature show
+#' @importFrom Rcpp evalCpp
+#' @useDynLib ResTree, .registration = TRUE
+"_PACKAGE"

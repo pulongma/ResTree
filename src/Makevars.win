@@ -1,0 +1,13 @@
+# Rtools provides GSL headers/libraries on its standard search paths. No Unix
+# gsl-config or downloaded binary bundle is needed. Custom installations may
+# override GSL_CFLAGS/GSL_LIBS in their personal Makevars.win (matching R's CRT
+# and architecture); this also supports older Rtools with separately built GSL.
+GSL_CFLAGS =
+GSL_LIBS = -lgsl -lgslcblas
+
+CXX_STD = CXX17
+PKG_CPPFLAGS = $(GSL_CFLAGS)
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(GSL_LIBS) $(SHLIB_OPENMP_CXXFLAGS)
+
+OBJECTS = GPutils.o RcppExports.o tree_engine.o SMC.o PMMH.o Full.o restree_loglik.o prediction.o scores.o wrapper.o

@@ -1,0 +1,11 @@
+^man-roxygen$
+^README\.md$
+^_to_delete$
+^\.gitattributes$
+^config\.(log|status)$
+^configure~$
+^autom4te\.cache$
+^.*\.Rcheck$
+^\.github$
+^tests$
+^tools/run-tests\.R$

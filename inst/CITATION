@@ -1,0 +1,14 @@
+NOTE <- paste("R package ResTree, version", meta$Version)
+
+bibentry(
+  bibtype      = "Misc",
+  mheader      = "Please cite ResTree including its version number as",
+  title        = "ResTree: Residual Tree Gaussian Process Models for High-Dimensional Spatial Data",
+  author       = person("Pulong", "Ma", role = c("aut", "cre"), email = "plma@iastate.edu"),
+  note         = NOTE,
+  organization = "Iowa State University",
+  address      = "Ames, IA, USA",
+  year         = 2026,
+  textVersion  = paste0("Ma, P. (2026). ResTree: Residual Tree Gaussian Process Models ",
+                        "for High-Dimensional Spatial Data. ", NOTE, ". Iowa State University, Ames, IA, USA.")
+)

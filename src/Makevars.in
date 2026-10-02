@@ -1,0 +1,13 @@
+## Makevars.in for ResTree
+## GSL_CFLAGS and GSL_LIBS are substituted by the configure script via gsl-config
+
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_LIBS = @GSL_LIBS@
+
+CXX_STD = CXX17
+PKG_CPPFLAGS = $(GSL_CFLAGS)
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(GSL_LIBS) $(SHLIB_OPENMP_CXXFLAGS)
+
+## Compiled modules.
+OBJECTS = GPutils.o RcppExports.o tree_engine.o SMC.o PMMH.o Full.o restree_loglik.o prediction.o scores.o wrapper.o

@@ -1,0 +1,8 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+# These must remain executable by Unix tools after a Windows checkout/build.
+configure text eol=lf
+configure.ac text eol=lf
+cleanup text eol=lf
+*.sh text eol=lf
+src/Makevars* text eol=lf

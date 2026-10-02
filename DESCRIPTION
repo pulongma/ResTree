@@ -1,0 +1,16 @@
+Package: ResTree
+Type: Package
+Title: Residual Tree Gaussian Process Models for High-Dimensional Spatial Data
+Version: 0.2.0
+Date: 2026-09-20
+Authors@R: person("Pulong", "Ma", role = c("aut", "cre"), email = "plma@iastate.edu")
+Description: Fits residual tree Gaussian process models for high-dimensional spatial data. The residual tree GP (ResTGP) model is built hierarchically on a Bayesian CART prior for random recursive partitioning of the domain and a base GP prior: given the tree, the process at internal nodes is specified as a multi-scale predictive process and the process at leaf nodes is specified with three leaf models: PP, WN, and Full. Here PP refers to the specification of predictive processes at leaf nodes so that this model can approximate a pre-specific covariance function; WN refers to the specification of a white-noise process (or more precisely a normal-mean model) at leaf nodes so that it can adapt to input dependent behaviors (e.g., regime changing). Full refers to the full-scale residual covariance used at leaf nodes to allow full-scale approximation but this only allows a fixed tree since leaf node model selection is possible as it always encourage early stop at root node.  PP and WN allow tree inference via sequential Monte Carlo algorithm while Full assumes a fixed tree and can be sensitive to tree specification. PP and Full both can be approximate GP but PP generally performs better in higher dimensional domain because of tree inference. WN is more suitable to capture input-dependent mean or noise structures in the function as the leaf model learns residuals through the normal-mean model. The residual processes are used to enable fast inference. This package has implemented these models for high-dimensional spatial domain with tested examples on 20 dimensions that works very well. The implemented models is scalable for large dataset in high-dimensional spatial domain. The covariance function is default to input-rescaled Matérn covariance function with other covariance supported including Confluent Hypergeometric family (CH), Gaussian family (gauss or sqexp), and Cauchy family (cauchy). These covariance functions are implemented with ARD (default), tensor, or isotropic forms. Covariance parameters can be estimated via MLE or Bayesian methods via MAP or particle marginal Metropolis-Hastings (PMMH) algorithms.
+License: GPL (>= 2)
+Encoding: UTF-8
+Depends: R (>= 4.0.0)
+Imports: Rcpp (>= 1.0.1), methods, stats, utils
+Suggests: ggplot2
+LinkingTo: Rcpp, RcppEigen
+SystemRequirements: GNU Scientific Library version >= 2.5
+NeedsCompilation: yes
+RoxygenNote: 7.3.3

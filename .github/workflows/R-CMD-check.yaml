@@ -1,0 +1,54 @@
+name: R package portability
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.os }} / R ${{ matrix.r }} / ${{ matrix.backend }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, r: release, backend: openmp}
+          - {os: ubuntu-latest, r: oldrel-1, backend: openmp}
+          - {os: ubuntu-latest, r: release, backend: serial}
+          - {os: macos-latest, r: release, backend: native}
+          - {os: windows-latest, r: release, backend: openmp}
+    env:
+      R_KEEP_PKG_SOURCE: yes
+      RESTREE_EXPECT_OPENMP: ${{ matrix.backend }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r }}
+      - name: Install GSL (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgsl-dev
+      - name: Install GSL (macOS)
+        if: runner.os == 'macOS'
+        run: brew list --versions gsl >/dev/null 2>&1 || brew install gsl
+      # On Windows use the matching Rtools GSL, not a downloaded foreign DLL.
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      - name: Disable OpenMP for the serial fallback job
+        if: matrix.backend == 'serial'
+        shell: Rscript {0}
+        run: |
+          path <- file.path(Sys.getenv("RUNNER_TEMP"), "Makevars-serial")
+          writeLines("SHLIB_OPENMP_CXXFLAGS =", path)
+          cat("R_MAKEVARS_USER=", path, "\n", file=Sys.getenv("GITHUB_ENV"), append=TRUE, sep="")
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual", "--as-cran")'
+          build_args: 'c("--no-manual")'
+          error-on: '"warning"'
+          check-dir: 'file.path(Sys.getenv("RUNNER_TEMP"), "restree-check")'

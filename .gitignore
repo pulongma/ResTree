@@ -1,0 +1,14 @@
+# build artefacts (R CMD INSTALL / configure); the sources are the only thing tracked
+src/*.o
+src/*.so
+src/*.dll
+src/Makevars
+config.log
+config.status
+configure~
+autom4te.cache/
+*.Rcheck/
+.Rhistory
+.Rapp.history
+.DS_Store
+_to_delete/
